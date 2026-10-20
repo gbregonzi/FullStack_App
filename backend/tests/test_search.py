@@ -23,7 +23,7 @@ FIXED_DATE = date(2026, 9, 10)
 def test_source_dataset_loads_with_source_scoped_identity() -> None:
     """Load the provided dataset and verify unique source-qualified identities."""
     listings = load_listings()
-    assert len(listings) == 12
+    assert len(listings) == 37
     identities = {(listing.source, listing.id) for listing in listings}
     assert len(identities) == len(listings)
     assert listings[0].listed_date == date(2026, 8, 29)
@@ -51,8 +51,8 @@ def test_relevance_score_rewards_budget_fit_and_recent_listings() -> None:
 def test_search_returns_ranked_results_and_correct_pagination() -> None:
     """Return the requested page, with consistent totals and navigation flags."""
     result = search_listings(load_listings(), 450_000, page=2, page_size=3, as_of=FIXED_DATE)
-    assert result.total == 12
-    assert result.total_pages == 4
+    assert result.total == 37
+    assert result.total_pages == 13
     assert len(result.results) == 3
     assert result.has_previous is True
     assert result.has_next is True
@@ -61,15 +61,15 @@ def test_search_returns_ranked_results_and_correct_pagination() -> None:
 def test_last_and_out_of_range_pages_are_handled() -> None:
     """Allow the last partial page and return an empty page beyond the end."""
     last_page = search_listings(
-        load_listings(), 450_000, page=4, page_size=3, as_of=FIXED_DATE
+        load_listings(), 450_000, page=13, page_size=3, as_of=FIXED_DATE
     )
     empty_page = search_listings(
-        load_listings(), 450_000, page=5, page_size=3, as_of=FIXED_DATE
+        load_listings(), 450_000, page=14, page_size=3, as_of=FIXED_DATE
     )
-    assert len(last_page.results) == 3
+    assert len(last_page.results) == 1
     assert last_page.has_next is False
     assert empty_page.results == []
-    assert empty_page.total == 12
+    assert empty_page.total == 37
     assert empty_page.has_previous is True
 
 
