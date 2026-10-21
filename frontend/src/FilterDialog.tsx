@@ -1,4 +1,5 @@
 import type { ListingFeatureKey, ListingFeatures } from "./types";
+import { useEffect, useState } from "react";
 
 interface FilterDialogProps {
   filters: ListingFeatures;
@@ -27,6 +28,20 @@ export default function FilterDialog({
   onApply,
   onClose,
 }: FilterDialogProps) {
+  
+  const [isAnyFilterClicked, setIsAnyFilterClicked] = useState(false);
+  
+  useEffect(() => {
+    let isAnyFilter = false;
+    for (const key in filters) {
+      if (filters[key as ListingFeatureKey] === true) {
+        isAnyFilter = true;
+        break;
+      }
+    }
+    setIsAnyFilterClicked(isAnyFilter);
+  }, [filters]);
+  
   return (
     <div className="filter-window-backdrop" onClick={onClose}>
       <div
@@ -64,8 +79,12 @@ export default function FilterDialog({
                 <label className="filter-window-feature" key={field}>
                   <input
                     type="checkbox"
-                    checked={filters[field]}
-                    onChange={(event) => onFeatureChange(field, event.target.checked)}
+                    checked={
+                      filters[field]
+                    }
+                    onChange={(event) => {
+                      onFeatureChange(field, event.target.checked);
+                    }}
                   />
                   <span>{label}</span>
                 </label>
@@ -73,13 +92,18 @@ export default function FilterDialog({
             </div>
           </fieldset>
           <div className="filter-window-footer">
-            <button type="button" className="search-button" onClick={onClearFilters}>
+            <button type="button" className="search-button" 
+              disabled={!isAnyFilterClicked}
+              onClick={onClearFilters}>
               Clear filters
             </button>
-            <button type="button" className="filter-window-secondary" onClick={onClose}>
+            <button type="button" className="filter-window-secondary" 
+              onClick={onClose}>
               Close
             </button>
-            <button type="submit" className="search-button">
+            <button type="submit" className="search-button"
+                disabled={!isAnyFilterClicked}
+            >
               Apply filters
             </button>
           </div>

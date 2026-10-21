@@ -119,6 +119,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 }
 .search-button:hover:not(:disabled) { background: #1b4639; }
 .search-button:disabled { opacity: .65; cursor: wait; }
+.filter-window-footer .search-button:disabled { cursor: not-allowed; }
 
 .results-section { padding: 37px 0 30px; }
 .results-heading { margin-bottom: 18px; }

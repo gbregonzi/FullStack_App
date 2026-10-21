@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.data import load_listings
-from app.models import ErrorDetail, ErrorResponse, ScoreResponse, SearchResponse
+from app.models import ErrorBody, ErrorDetail, ErrorResponse, ScoreResponse, SearchResponse
 from app.scoring import calculate_relevance_score
 from app.search import CityNotFoundError, NoKeywordMatchesError, SearchValidationError, search_listings
 
@@ -30,15 +30,15 @@ async def validation_error_handler(
         ErrorDetail(
             field=".".join(str(part) for part in error["loc"] if part != "query"),
             message=error["msg"],
-        ).model_dump()
+        )
         for error in exc.errors()
     ]
     response = ErrorResponse(
-        error={
-            "code": "validation_error",
-            "message": "One or more request parameters are invalid.",
-            "details": details,
-        }
+        error=ErrorBody(
+            code="validation_error",
+            message="One or more request parameters are invalid.",
+            details=details,
+        )
     )
     return JSONResponse(status_code=422, content=response.model_dump())
 
@@ -95,35 +95,35 @@ def search(
         return JSONResponse(
             status_code=422,
             content=ErrorResponse(
-                error={
-                    "code": "invalid_filter_range",
-                    "message": str(exc),
-                    "details": [
-                        {"field": "minPrice/maxPrice", "message": str(exc)}
+                error=ErrorBody(
+                    code="invalid_filter_range",
+                    message=str(exc),
+                    details=[
+                        ErrorDetail(field="minPrice/maxPrice", message=str(exc))
                     ],
-                }
+                )
             ).model_dump(),
         )
     except CityNotFoundError as exc:
         return JSONResponse(
             status_code=404,
             content=ErrorResponse(
-                error={
-                    "code": "city_not_found",
-                    "message": str(exc),
-                    "details": [{"field": "city", "message": str(exc)}],
-                }
+                error=ErrorBody(
+                    code="city_not_found",
+                    message=str(exc),
+                    details=[ErrorDetail(field="city", message=str(exc))],
+                )
             ).model_dump(),
         )
     except NoKeywordMatchesError as exc:
         return JSONResponse(
             status_code=404,
             content=ErrorResponse(
-                error={
-                    "code": "no_keyword_matches",
-                    "message": str(exc),
-                    "details": [{"field": "keyword", "message": str(exc)}],
-                }
+                error=ErrorBody(
+                    code="no_keyword_matches",
+                    message=str(exc),
+                    details=[ErrorDetail(field="keyword", message=str(exc))],
+                )
             ).model_dump(),
         )
 
@@ -146,11 +146,11 @@ def score_listing(
         return JSONResponse(
             status_code=404,
             content=ErrorResponse(
-                error={
-                    "code": "listing_not_found",
-                    "message": f"Listing '{listing_id}' was not found for source '{source}'.",
-                    "details": [{"field": "source/listing_id", "message": "No matching listing."}],
-                }
+                error=ErrorBody(
+                    code="listing_not_found",
+                    message=f"Listing '{listing_id}' was not found for source '{source}'.",
+                    details=[ErrorDetail(field="source/listing_id", message="No matching listing.")],
+                )
             ).model_dump(),
         )
     return ScoreResponse(
